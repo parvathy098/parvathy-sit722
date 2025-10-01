@@ -9,6 +9,22 @@ jobs:
   test-and-build:
     runs-on: ubuntu-latest
     
+    # Add PostgreSQL as a service container
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: customers
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -26,6 +42,8 @@ jobs:
           pip install pytest pytest-cov
 
       - name: Run Customer Service Tests
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/customers
         run: |
           cd backend/customer_service
           pytest --cov=. --cov-report=xml --cov-report=term
@@ -39,6 +57,8 @@ jobs:
           pip install pytest pytest-cov
 
       - name: Run Order Service Tests
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/orders
         run: |
           cd backend/order_service
           pytest --cov=. --cov-report=xml --cov-report=term
@@ -52,6 +72,8 @@ jobs:
           pip install pytest pytest-cov
 
       - name: Run Product Service Tests
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/products
         run: |
           cd backend/product_service
           pytest --cov=. --cov-report=xml --cov-report=term
