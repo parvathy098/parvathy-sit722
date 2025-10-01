@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 from app.db import SessionLocal, engine, get_db
-from app.main import PRODUCT_SERVICE_URL, app
+from app.main import app  # FIXED: Removed PRODUCT_SERVICE_URL import
 from app.models import Base, Order, OrderItem
 
 from fastapi.testclient import TestClient
@@ -109,3 +109,4 @@ def test_health_check(client: TestClient):
     response = client.get("/health")
     assert response.status_code == 200
     assert response.json() == {"status": "ok", "service": "order-service"}
+    
