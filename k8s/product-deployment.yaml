@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: product-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: product-service
+  template:
+    metadata:
+      labels:
+        app: product-service
+    spec:
+      containers:
+      - name: product-service
+        image: your-acr.azurecr.io/product-service:latest
+        ports:
+        - containerPort: 5002
+        env:
+        - name: POSTGRES_USER
+          value: "postgres"
+        - name: POSTGRES_PASSWORD
+          value: "postgres"
+        - name: POSTGRES_DB
+          value: "products"
+        - name: POSTGRES_HOST
+          value: "postgres-service"
+        - name: POSTGRES_PORT
+          value: "5432"
+        - name: AZURE_STORAGE_ACCOUNT_NAME
+          value: "yourstorageaccount"
+        - name: AZURE_STORAGE_ACCOUNT_KEY
+          value: "your-storage-key"
+        - name: AZURE_STORAGE_CONTAINER_NAME
+          value: "product-images"
+      imagePullSecrets:
+      - name: acr-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: product-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: product-service
+  ports:
+  - protocol: TCP
+    port: 5002
+    targetPort: 5002
