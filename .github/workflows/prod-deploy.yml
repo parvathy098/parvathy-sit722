@@ -16,14 +16,16 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: Get AKS Credentials
-      run: az aks get-credentials -n ${{ secrets.PRODUCTION_CLUSTER_NAME }} -g ${{ secrets.RESOURCE_GROUP }} --overwrite-existing
+    - name: Get AKS Credentials (Production)
+      run: |
+        az aks get-credentials -n ${{ secrets.PRODUCTION_CLUSTER_NAME }} -g ${{ secrets.RESOURCE_GROUP }} --overwrite-existing
 
     - name: Deploy to Production
       run: |
         SHA=${{ github.sha }}
         for f in k8s/*.yaml; do
-          sed -i "s|<IMAGE_TAG>|prod-$SHA|g" $f
+          sed -i "s|<IMAGE_TAG>|$SHA|g" $f
         done
         kubectl apply -f k8s/
-        kubectl rollout status deployment/customer-service --timeout=120s || true
+        kubectl get pods -o wide
+        kubectl get svc
